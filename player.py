@@ -1,5 +1,6 @@
 import pygame
 from settings import *
+from support import import_folder
 
 class Player(pygame.sprite.Sprite):
     def __init__(self,pos,groups,obstacle_sprites):
@@ -8,27 +9,81 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft = pos)
         self.hitbox = self.rect.inflate(0,-26)
 
+        # self Movement
         self.direction = pygame.math.Vector2()
         self.speed = 5
 
+        self.attack = False
+        self.attack_cooldown = 400
+        self.attack_time = None
+
         self.obstacle_sprites = obstacle_sprites
 
+        # Graphic setup
+        self.import_player_assets()
+        self.status = 'down'
+        self.frame_index = 0
+        self.animation_speed = 0.15
+
+    def import_player_assets(self):
+        character_path = 'graphics/player/'
+        self.animation = {'up': [],'down': [],'left': [],'right': [],
+			'right_idle':[],'left_idle':[],'up_idle':[],'down_idle':[],
+			'right_attack':[],'left_attack':[],'up_attack':[],'down_attack':[]}
+
+        for animation in self.animation.keys():
+            full_path = character_path + animation
+            self.animation[animation] = import_folder(full_path)
+
     def intput(self):
+        # Move input
         keys = pygame.key.get_pressed()
 
-        if keys[pygame.K_w]:
-            self.direction.y = -1
-        elif keys[pygame.K_s]:
-            self.direction.y = 1
-        else:
-            self.direction.y = 0
+        if not self.attack:
+            if keys[pygame.K_w]:
+                self.direction.y = -1
+                self.status = 'up'
+            elif keys[pygame.K_s]:
+                self.direction.y = 1
+                self.status = 'down'
+            else:
+                self.direction.y = 0
 
-        if keys[pygame.K_d]:
-            self.direction.x = 1
-        elif keys[pygame.K_a]:
-            self.direction.x = -1
-        else:
+            if keys[pygame.K_d]:
+                self.direction.x = 1
+                self.status = 'right'
+            elif keys[pygame.K_a]:
+                self.direction.x = -1
+                self.status = 'left'
+            else:
+                self.direction.x = 0
+
+            # Attack input
+            if keys[pygame.K_SPACE]:
+                self.attack = True
+                self.attack_time = pygame.time.get_ticks()
+
+            # Magic input
+            if keys[pygame.K_LSHIFT]:
+                self.attack = True
+                self.attack_time = pygame.time.get_ticks()
+
+    def get_status(self):
+        if self.direction.x == 0 and self.direction.y == 0:
+            if not 'idle' in self.status and not 'attack' in self.status:
+                self.status = self.status + '_idle'
+
+        if self.attack:
             self.direction.x = 0
+            self.direction.y = 0
+            if not 'attack' in self.status:
+                if 'idle' in self.status:
+                    self.status = self.status.replace('_idle', '_attack')
+                else:
+                    self.status = self.status + '_attack'
+        else:
+            if 'attack' in self.status:
+                self.status = self.status.replace('_attack','')
 
     def move(self, speed):
         if self.direction.magnitude() != 0:
@@ -56,6 +111,25 @@ class Player(pygame.sprite.Sprite):
                     if self.direction.y < 0:
                         self.hitbox.top = sprite.hitbox.bottom
 
+    def cooldown(self):
+            current_time = pygame.time.get_ticks()
+            if self.attack:
+                if current_time - self.attack_time >= self.attack_cooldown:
+                    self.attack = False
+
+    def animate(self):
+        animation = self.animation[self.status]
+
+        self.frame_index += self.animation_speed
+        if self.frame_index >= len(animation):
+            self.frame_index = 0
+
+        self.image = animation[int(self.frame_index)]
+        self.rect = self.image.get_rect(center = self.hitbox.center)
+
     def update(self):
         self.intput()
+        self.cooldown()
+        self.get_status()
+        self.animate()
         self.move(self.speed)
