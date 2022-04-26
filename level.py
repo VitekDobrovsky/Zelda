@@ -6,6 +6,7 @@ from debug import debug
 from support import *
 from random import choice
 from weapon import Weapon
+from ui import UI
 
 class Level:
     def __init__(self):
@@ -17,8 +18,10 @@ class Level:
 
         self.current_attack = None
 
-
         self.create_map()
+
+        # User inerface
+        self.ui = UI()
 
     def create_map(self):
         layouts = {
@@ -59,7 +62,7 @@ class Level:
         # Update and Draw the game
         self.visible_sprites.custom_draw(self.player)
         self.visible_sprites.update()
-        debug(self.player.status)
+        self.ui.display(self.player)
 
 class YSortCameraGroup(pygame.sprite.Group):
     def __init__(self):
