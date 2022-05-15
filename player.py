@@ -41,8 +41,8 @@ class Player(Entity):
 
         # Stats
         self.stats = {'health': 100, 'energy': 60, 'attack': 10, 'magic': 4, 'speed': 5}
-        self.health = self.stats['health']
-        self.energy = self.stats['energy']
+        self.health = self.stats['health'] * 0.5
+        self.energy = self.stats['energy'] * 0.8
         self.speed = self.stats['speed']
         self.exp = 100
 
@@ -95,7 +95,7 @@ class Player(Entity):
                 self.magic = True
                 self.magic_time = pygame.time.get_ticks()
                 style = list(magic_data.keys())[self.magic_index]
-                strength = list(magic_data.values())[self.magic_index]['strength'] + self.stats['magic']
+                strength = list(magic_data.values())[self.magic_index]['strength']
                 cost = list(magic_data.values())[self.magic_index]['cost']
 
                 self.create_magic(style,strength,cost)
@@ -169,6 +169,7 @@ class Player(Entity):
             self.image.set_alpha(alpha)
         else:
             self.image.set_alpha(225)
+
     def get_full_weapon_damage(self):
         base_damege = self.stats['attack']
         weapon_damage = weapon_data[self.weapon]['damage']
