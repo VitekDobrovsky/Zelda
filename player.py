@@ -11,10 +11,10 @@ class Player(Entity):
         self.rect = self.image.get_rect(topleft = pos)
         self.hitbox = self.rect.inflate(0,-26)
 
-        # Movement
         self.attack = False
         self.attack_cooldown = 400
         self.attack_time = None
+        self.magic_cooldown = 200
 
         self.obstacle_sprites = obstacle_sprites
 
@@ -41,10 +41,12 @@ class Player(Entity):
 
         # Stats
         self.stats = {'health': 100, 'energy': 60, 'attack': 10, 'magic': 4, 'speed': 5}
+        self.max_stats = {'health': 300, 'energy': 140, 'attack': 20, 'magic': 10, 'speed': 10}
+        self.upgrade_cost = {'health': 100, 'energy': 100, 'attack': 100, 'magic': 100, 'speed': 100}
         self.health = self.stats['health'] * 0.5
         self.energy = self.stats['energy'] * 0.8
         self.speed = self.stats['speed']
-        self.exp = 100
+        self.exp = 500
 
         # damage timer
         self.vulnerable = True
@@ -92,8 +94,8 @@ class Player(Entity):
 
             # Magic input
             if keys[pygame.K_LSHIFT]:
-                self.magic = True
-                self.magic_time = pygame.time.get_ticks()
+                self.attack = True
+                self.attack_time = pygame.time.get_ticks()
                 style = list(magic_data.keys())[self.magic_index]
                 strength = list(magic_data.values())[self.magic_index]['strength']
                 cost = list(magic_data.values())[self.magic_index]['cost']
@@ -175,9 +177,21 @@ class Player(Entity):
         weapon_damage = weapon_data[self.weapon]['damage']
         return base_damege + weapon_damage
 
+    def get_full_magic_damage(self):
+        base_damage = self.stats['magic']
+        magic_damage = magic_data[self.magic]['strength']
+        return base_damage + magic_damage
+
+    def get_energy(self):
+        if self.energy < self.stats['energy']:
+            self.energy += 0.01 * self.stats['magic']
+        else:
+            self.energy = self.stats['energy']
+
     def update(self):
         self.intput()
         self.cooldown()
         self.get_status()
         self.animate()
         self.move(self.speed)
+        self.get_energy()

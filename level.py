@@ -81,7 +81,8 @@ class Level:
                                       [self.visible_sprites,self.attackable_sprites],
                                       self.obstacle_sprites,
                                       self.damage_player,
-                                      self.triger_death_particles)
+                                      self.triger_death_particles,
+                                      self.add_exp)
 
     def create_attack(self):
         self.current_attack = Weapon(self.player,[self.visible_sprites,self.attack_sprites])
@@ -91,8 +92,7 @@ class Level:
         if style == 'heal':
             self.magic_player.heal(self.player,strength,cost,[self.visible_sprites])
         if style == 'flame':
-            pass
-
+            self.magic_player.flame(self.player,cost,[self.visible_sprites,self.attack_sprites])
 
     def destroy_attack(self):
         if self.current_attack:
@@ -124,6 +124,9 @@ class Level:
             self.player.vulnerable = False
             self.player.hurt_time = pygame.time.get_ticks()
             self.animation_player.create_particles(attack_type,self.player.rect.center,[self.visible_sprites])
+
+    def add_exp(self,amount):
+        self.player.exp += amount
 
     def run(self):
         # Update and Draw the game
