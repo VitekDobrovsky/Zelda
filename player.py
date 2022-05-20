@@ -102,7 +102,7 @@ class Player(Entity):
 
                 self.create_magic(style,strength,cost)
 
-            if keys[pygame.K_q] and self.can_switch_weapon:
+            if keys[pygame.K_r] and self.can_switch_weapon:
                 self.can_switch_weapon = False
                 self.weapon_switch_time = pygame.time.get_ticks()
                 if self.weapon_index >= len(list(weapon_data.keys())) - 1:
@@ -111,7 +111,7 @@ class Player(Entity):
                     self.weapon_index += 1
                 self.weapon = list(weapon_data.keys())[self.weapon_index]
 
-            if keys[pygame.K_r] and self.can_switch_magic:
+            if keys[pygame.K_q] and self.can_switch_magic:
                 self.can_switch_magic = False
                 self.magic_switch_time = pygame.time.get_ticks()
                 if self.magic_index >= len(list(magic_data.keys())) - 1:
@@ -182,6 +182,12 @@ class Player(Entity):
         magic_damage = magic_data[self.magic]['strength']
         return base_damage + magic_damage
 
+    def value_by_index(self,index):
+        return list(self.stats.values())[index]
+
+    def cost_by_index(self,index):
+        return list(self.upgrade_cost.values())[index]
+
     def get_energy(self):
         if self.energy < self.stats['energy']:
             self.energy += 0.01 * self.stats['magic']
@@ -193,5 +199,5 @@ class Player(Entity):
         self.cooldown()
         self.get_status()
         self.animate()
-        self.move(self.speed)
+        self.move(self.stats['speed'])
         self.get_energy()
