@@ -9,7 +9,9 @@ class Player(Entity):
 
         self.image = pygame.image.load('graphics/test/player.png').convert_alpha()
         self.rect = self.image.get_rect(topleft = pos)
-        self.hitbox = self.rect.inflate(0,-26)
+        self.hitbox = self.rect.inflate(-6,HITBOX_OFFSET['player'])
+
+        self.player_dead = False
 
         self.attack = False
         self.attack_cooldown = 400
@@ -17,6 +19,8 @@ class Player(Entity):
         self.magic_cooldown = 200
 
         self.obstacle_sprites = obstacle_sprites
+
+        self.can_play_music = True
 
         # weapon
         self.create_attack = create_attack
@@ -34,6 +38,9 @@ class Player(Entity):
         self.can_switch_magic = True
         self.magic_switch_time = None
 
+        # sound
+        self.weapon_attack_sound = pygame.mixer.Sound('audio/sword.wav')
+        self.weapon_attack_sound.set_volume(0.2)
 
         # Graphic setup
         self.import_player_assets()
@@ -91,6 +98,7 @@ class Player(Entity):
                 self.attack = True
                 self.attack_time = pygame.time.get_ticks()
                 self.create_attack()
+                self.weapon_attack_sound.play()
 
             # Magic input
             if keys[pygame.K_LSHIFT]:
@@ -166,6 +174,7 @@ class Player(Entity):
         self.image = animation[int(self.frame_index)]
         self.rect = self.image.get_rect(center = self.hitbox.center)
 
+    def blickering(self):
         if not self.vulnerable:
             alpha = self.wave_value()
             self.image.set_alpha(alpha)
@@ -199,5 +208,6 @@ class Player(Entity):
         self.cooldown()
         self.get_status()
         self.animate()
+        self.blickering()
         self.move(self.stats['speed'])
         self.get_energy()

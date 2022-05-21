@@ -13,6 +13,11 @@ class Game:
 
         self.level = Level()
 
+        # sound
+        self.main_sound = pygame.mixer.Sound('audio/main.ogg')
+        self.main_sound.set_volume(0.3)
+        self.main_sound.play(loops = -1)
+
     def run(self):
         while True:
             for event in pygame.event.get():
@@ -21,10 +26,12 @@ class Game:
                     sys.exit()
 
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_m:
+                    if event.key == pygame.K_m or event.key == pygame.K_ESCAPE:
                         self.level.toggle_menu()
+            if self.level.player_dead:
+                self.main_sound.set_volume(0.1)
 
-            self.screen.fill('lightblue')
+            self.screen.fill(WATER_COLOR)
             self.level.run()
             pygame.display.update()
             self.clock.tick(FPS)

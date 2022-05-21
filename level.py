@@ -11,12 +11,16 @@ from enemy import Enemy
 from particles import AnimationPlayer
 from magic import MagicPl
 from upgrade import  Upgrade
+from die_screen import DieScreen
 
 class Level:
 
     def __init__(self):
         self.display_surface = pygame.display.get_surface()
         self.game_paused = False
+        self.player_dead = False
+        self.can_play_sound = True
+        self.sound_played = False
 
         # Sprite set up
         self.visible_sprites = YSortCameraGroup()
@@ -32,6 +36,7 @@ class Level:
         # User inerface
         self.upgrade = Upgrade(self.player)
         self.ui = UI()
+        self.dies = DieScreen(self.player)
 
         # particles
         self.animation_player = AnimationPlayer()
@@ -134,16 +139,22 @@ class Level:
     def toggle_menu(self):
         self.game_paused = not self.game_paused
 
+    def player_death(self):
+        if self.player.health <= 0:
+            self.player_dead = True
+            self.dies.display()
+
     def run(self):
         self.visible_sprites.custom_draw(self.player)
         self.ui.display(self.player)
-
-        if self.game_paused:
-            self.upgrade.display()
-        else:
-            self.visible_sprites.update()
-            self.visible_sprites.enemy_updade(self.player)
-            self.player_attack_logic()
+        self.player_death()
+        if not self.player_dead:
+            if self.game_paused:
+                self.upgrade.display()
+            else:
+                self.visible_sprites.update()
+                self.visible_sprites.enemy_updade(self.player)
+                self.player_attack_logic()
 
 class YSortCameraGroup(pygame.sprite.Group):
     def __init__(self):
